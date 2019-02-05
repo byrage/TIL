@@ -32,3 +32,13 @@
 >```
 
 #### [Painless에서 사용할 수 있는 메소드 whitelist](https://www.elastic.co/guide/en/elasticsearch/painless/6.1/painless-api-reference.html)
+
+#### Deprecated arcDistanceInKm
+- 미터단위인 arcDistance, arcDistanceWithDefault(기본값 지정 가능)를 사용하고 * 0.001해서 사용하라고함
+- See : https://www.elastic.co/guide/en/elasticsearch/reference/5.2/breaking_50_scripting.html#_geopoint_scripts
+
+#### Writing Script in Java String
+- String 변수에 커서 위치한 후 Alt+Enter -> Inject language or reference -> Groovy 선택
+- or String 변수위에 `//language=Groovy` 주석 추가
+- 문자열을 Groovy 코드처럼 문법 체크 및 포맷팅 할 수 있음
+- 진정한 꿀팁!
