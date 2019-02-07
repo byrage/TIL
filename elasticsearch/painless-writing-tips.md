@@ -23,13 +23,24 @@
 #### [value, values](https://www.elastic.co/guide/en/elasticsearch/reference/master/modules-scripting-fields.html)
 - 단일 필드의 경우 `doc['modificationDate'].value`로 사용해야 함
 - value를 붙이지 않을 경우 String으로 취급된다.
-- 리스트 필드의 경우 `doc['themes'].values`로 사용해야 함
->```
+- 리스트 필드의 경우 `doc['themes'].values`로 받아서 for, for-each 구문으로  사용해야 함
+>~~~groovy
+> // for
 > for (int i = 0; i < doc['themes'].values.length; i++) {
->    if (doc['themes'].values.get(i) == 1) ...
+>    if (doc['themes'].values.get(i) == 1) {
+>      ...
 >    }
 >}
->```
+>~~~
+
+>~~~groovy
+> // for-each
+> for (def theme : doc['themes'].values) {
+>    if (theme == 1) {
+>      ...
+>    }
+>}
+>~~~
 
 #### [Painless에서 사용할 수 있는 메소드 whitelist](https://www.elastic.co/guide/en/elasticsearch/painless/6.1/painless-api-reference.html)
 
@@ -38,7 +49,6 @@
 - See : https://www.elastic.co/guide/en/elasticsearch/reference/5.2/breaking_50_scripting.html#_geopoint_scripts
 
 #### Writing Script in Java String
-- String 변수에 커서 위치한 후 Alt+Enter -> Inject language or reference -> Groovy 선택
-- or String 변수위에 `//language=Groovy` 주석 추가
-- 문자열을 Groovy 코드처럼 문법 체크 및 포맷팅 할 수 있음
+- String 변수에 커서 위치한 후 Alt+Enter -> Inject language or reference -> Groovy 선택 or String 변수위에 `//language=Groovy` 주석 추가
+- 문자열을 Groovy 코드처럼 작성할 수 있고 IntelliJ에서 문법 체크 및 포맷팅 지원
 - 진정한 꿀팁!
