@@ -1,6 +1,9 @@
 # Painless 스크립트 작성 팁
 - ES v5.0부터 디폴트 스크립트가 painless로 변경됨
 
+#### Painless란?
+
+
 #### Date 타입 필드 현재시간 비교
 - ES 내부적으로 Date 타입 필드 저장 시 JodaCompatibleZonedDateTime 타입을 사용
 - painless 스크립트 내부에서 날짜인스턴스 생성시에는 Date(java.util.Date) 밖에 사용이 불가능함
@@ -45,10 +48,23 @@
 #### [Painless에서 사용할 수 있는 메소드 whitelist](https://www.elastic.co/guide/en/elasticsearch/painless/6.1/painless-api-reference.html)
 
 #### Deprecated arcDistanceInKm
-- 미터단위인 arcDistance, arcDistanceWithDefault(기본값 지정 가능)를 사용하고 * 0.001해서 사용하라고함
+- 미터단위인 arcDistance, arcDistanceWithDefault(기본값 지정 가능)를 사용하고 * 0.001해서 사용하라고 함
 - See : https://www.elastic.co/guide/en/elasticsearch/reference/5.2/breaking_50_scripting.html#_geopoint_scripts
 
 #### Writing Script in Java String
 - String 변수에 커서 위치한 후 Alt+Enter -> Inject language or reference -> Groovy 선택 or String 변수위에 `//language=Groovy` 주석 추가
 - 문자열을 Groovy 코드처럼 작성할 수 있고 IntelliJ에서 문법 체크 및 포맷팅 지원
 - 진정한 꿀팁!
+
+## function in Painless
+- 스크립트 최상단에 정의해야 된다.
+- doc 필드를 argument로 받아서 사용해야 함
+~~~groovy
+boolean isValid(def doc, def field) { 
+    return doc.containsKey(field); 
+}
+def now = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").parse(params['now']).getTime();
+if (isValid(doc, 'time') {
+  ...
+}
+~~~
