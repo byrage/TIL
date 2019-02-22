@@ -1,0 +1,128 @@
+## ElasticStack
+- beats -> logtsash -> es -> kibana
+- elastic common schema https://github.com/elastic/ecs
+  - 타임스탬프 지역 정보 들 공통정보
+- auditbeat
+  - 파일 통합 모니터링 및 리눅스 커널 감시
+  - metricbeat은 10초마다 동작
+  - 보안감지에 좋음. 이벤트 이력을 수집함
+- beats S2 kuberentes
+  - beats, kubernetes 둘다 go 언어로 구현됨
+  - 컨테이너 서비스 내에서 메트릭 수집
+  - 쿠버네티스에서 filebeat 모듈실행 - autodiscover
+- logstash
+  - persistent queue (dksk queue) 추가
+  - input -> queue -> filter -> output -> es
+  - filter -> output -> es에서 에러 발생시 DLQ에 쌓음
+- es
+  - indexing
+    - 속도 : 2.x -> 6.x : 약 2배 향상
+    - 통계데이터 Rollup 기능
+      - 히스토그램 설정 및, 필터를 미리 정의할 수 있음
+      - 공간이 90%정도 절약
+  - search
+    - KQL (kibana query language)
+      - 6.3에서 추가 : 옵션 enable 필요
+      - 루씬 문법에 비해 쉽고, 일부만 입력해도 자동완성기능 지원
+    - Cross Cluster Search
+      - GB단위 -> TB, PB, tribe로 커버가 불가능해짐
+      - 클러스터간에 버전이 달라도 검색이 가능하므로 버전업시 유용하게 사용 가능
+    - Adaptive Replica Selection
+      - 리플리카 샤드중에 지연시간이 높은 노드가 있을 경우 검색에서 배제함
+    - SQL
+      - CLI, JDBC, SQL over REST, Kibana Canvas, ODBC
+  - security
+    - 노드 통신은 의무적으로 TLS 활성
+    - 스택 통신은 선택적으로
+    - 기본 패스워드 -> 스크립트를 통해 keystore 파일 생성
+    - keystore : 복호화가 불가능하며, 통신이 필요할때 파일공유
+    - SAML : 키바나 로그인 시 구글인증
+    - kibana space
+      - 관리자용, 게스트용 화면 분리. 기존에는 대시보드는 공유하고 권한만 막혀있었음
+  - Kibana
+    - 같은 메이저버전에서 롤링 업그레이드
+    - 키바나에서 upgrade assistant를 지원함. 
+      - 업그레이드 시 문제가 되는 부분을 알려주고, 다음 메이저버전의 마지막 마이너 버전으로 업그레이드해줌
+    - 파일기반 복구
+      - 기존 : 리플리카 다운 후 복구 -> 프라이머리, 리플리카 diff해서 파일 전체를 복구
+      - 작업기반 복구(Opt-Based Recovery) : 똑같은 명령을 리플리카가 수행하도록
+    - 클러스터 간 복제
+      - 스냅샷, _reindex할 필요없이 leader/follower 인덱스 설정시 같은 명령이 follower에서 수행됨
+      - DR 구성시에도 용이
+    - index shrinking
+      - index close 후에 모든 샤드를 하나의 노드로 모음
+      - 인덱스 분리
+    - frozen index
+      - 검색 속도를 낮추고 저장공간을 효율적으로 생성
+    - index lifecycle management
+      - Hot -> Warm : 각 샤드를 하나의 노드로 모으고 _forcemerge로 최적화시킴
+      - kibana에서 생명주기 설정 가능
+    - GIS (ElasticMapservice)
+      - geo_point를 맵에 추가
+      - 타입별로 지도에 표시될 스타일 지정 가능
+      - 한국 시,군,구 지역정보도 있음
+
+## Nori
+- 한국어는 교착어. 명사/조사 분리 필요
+- ES Standard Analyzer : 공백으로 분리
+- Open source kroean analyzers : seunjeon, arirang, open-korean-text
+- mecab 기반
+  - mecab : 일본어사전 기반 언어분석기
+- 사전용량을 5.4mb로 최적화
+- symbol(조사?) 분리가 어려웠다고함. 위치와 형태가 각각달라서
+- 커스텀 사전
+  - DSL 용어가 많다면(몇 천개) 커스텀 사전을 만들어서 속도, 디스크를 효율적으로 사용하라고 함
+  - https://github.com/jimczi/nori/blob/master/how-to-custom-dict.asciidoc
+- 한자 -> 한글 필터도 있음. 뉴스기사 데이터에서 사용 가능
+- `_analyze` API로 분석
+- mecab-ko-dic을 업그레이드함
+- 사용자 사전에서 가장 긴 token을 찾는방식으로 동작
+
+## 11번가 아키텍처
+- monolithic 아키텍처(one oracle DB)에서 event driven 모델 microservice로 변경함
+- 이벤트가 언제 처리될지 알 수 없었음
+- 이벤트 모니터링이 필요해짐
+  - 이벤트 생성, 유실, 중복처리
+  - 잘못된 주문, 결제 지연 감지
+  - 모니터링 application vs elastic stack (watcher, vega 등 학습)
+- 전사 시스템 이벤트를 받고 있는 kafka에 logstash를 연결해서 es에 데이터 추가
+- kafka의 avro codec plugin 사용중
+- 대시보드에서 결제수단별 주문 메트릭을 보게됨 - 기획, 개발, 사업이 모두 하나의 대시보드를 볼 수 있음
+- 카프카 파티션 모니터링 대시보드도 추가함
+- alert
+  - kibana watcher 기능을 이용
+  - ES 쿼리를 작성해서 noti를 보내줌
+  - ex
+    - 주문이 10분 내에 처리되지 않은 이슈를 슬랙으로 전송
+    - 주문 성공시 1점, 10분이 지났으나 처리되지 않았으면 10점 등으로 스코어링해서 이상징후 파악
+- 머신러닝
+  - 악의적인 대량 주문 감지
+  - 카테고리 별 대량주문에 대한 조건을 설정하기 어렵기 때문에 watcher 대신 머신러닝을 사용하게 됨 ex) 2만원짜리 면도기 8천개 vs 100원짜리 물건 10000개
+  
+## DEVSISTERS
+- 수집로그 종류
+  - 액세스 로그, 어플리케이션 로그, CS대응 로그, 분석 로그, 감사로그(운영툴, 인프라 작업)
+- 일일 로그 건수 : 3억건, 로그 사이즈 : 500GB
+- 로그 메세지 큐(kafka) -> ES / Spark
+  - ES : 준 실시간 (10초)
+  - Spark : 일일 배치작업
+- Beats
+  - Logstash보다 기능이 한정적이지만, 기능별로 특화된 Data Shippers (ES 또는 다른 데이터수집기로 전송 가능)
+  - Golang으로 구현됨
+- Filebeat
+  - 로그 파일 수집에 사용됨
+  - 지정한 로그파일 업데이트 시 목적지로 메세지 전송
+  - 간단한 설정으로 Docker Container / Kubernetes 로그 수집 가능
+  - 데이터 processing이 제한적. 처리를 하더라도 host에 부하를 주게됨
+  - 데이터를 전송하고 ingest 노드를 이용해서 전처리
+  - or kafka streams로 전처리
+- ELK
+  - 다양한 로그를 받다보니 로그 스키마 통합이 안되어서 Kibana에서 로그가 안보이는 이슈가 있음
+  - redact 처리로 민감한 정보를 다루고 있음
+- use case
+  - 서버 로그 확인
+  - 게임운영 모니터링 : 어뷰징 감지, CS 대응, 롤백
+  - 실시간 지표 대시보드
+- Terraform
+  - ELK 인프라를 비롯한 모든 로깅 플랫폼 인프라는 코드로 관리
+  - 
