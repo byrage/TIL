@@ -51,10 +51,24 @@
 - 미터단위인 arcDistance, arcDistanceWithDefault(기본값 지정 가능)를 사용하고 * 0.001해서 사용하라고 함
 - See : https://www.elastic.co/guide/en/elasticsearch/reference/5.2/breaking_50_scripting.html#_geopoint_scripts
 
-#### Writing Script in Java String
-- String 변수에 커서 위치한 후 Alt+Enter -> Inject language or reference -> Groovy 선택 or String 변수위에 `//language=Groovy` 주석 추가
-- 문자열을 Groovy 코드처럼 작성할 수 있고 IntelliJ에서 문법 체크 및 포맷팅 지원
-- 진정한 꿀팁!
+#### Intellij Inject Language
+- String을 Groovy 혹은 다른 언어의 코드처럼 작성할 수 있음
+- IntelliJ에서 문법 체크 및 포맷팅 지원
+
+##### 적용방법
+- String으로 작성한 script 변수에 커서 위치한 후 Alt+Enter -> Inject language or reference -> Groovy 선택
+- 또는 String 변수위에 `//language=Groovy` 주석 추가하거나 [IntelliJ @Language("groovy") 어노테이션](https://www.jetbrains.com/help/idea/using-language-injections.html) 추가
+- 주석 방식
+~~~java
+//language=Groovy
+String script = "..."
+~~~
+- 어노테이션 방식
+~~~java
+//compileOnly('org.jetbrains:annotations:16.0.2') 의존성 추가
+@Language("groovy")
+String script = "..."
+~~~
 
 ## function in Painless
 - 스크립트 최상단에 정의해야 된다.
