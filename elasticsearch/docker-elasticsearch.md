@@ -11,7 +11,10 @@
   > ~~~ 
   2. max virtual memory areas vm.max_map_count [65530] is too low, increase to at least [262144]
   > ~~~bash
-  > sudo sysctl -w vm.max_map_count=262144
+  > # vm.max_map_count 추가
+  > sudo vi /etc/sysctl.conf
+  > vm.max_map_count = 262144 
+  > sudo sysctl -p 
   > ~~~
 - docker-compose.yml에서 data, config 디렉토리 볼륨설정
   - 볼륨 마운트 위치 확인 : `docker volume inspect elasticsearch_esdata`
