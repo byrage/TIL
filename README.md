@@ -3,14 +3,14 @@
 - [Window Size](elasticsearch/es-window-size.md)
 - [Painless 스크립트 팁](elasticsearch/painless-writing-tips.md)
 - [ES에서 사용되는 용어](elasticsearch/elasticsearch-terms.md)
-- [Geo Distance 쿼리에서 제한거리가 ES 필드안에 있는 경우](elasticsearch/geo_distance_in_distance_with_es_field.md)
+- [Geo Distance 쿼리에서 제한거리가 ES 필드안에 있는 경우](elasticsearch/geo_distance_query_range_in_field.md)
 - [ES Docker환경 구성](elasticsearch/docker-elasticsearch.md)
 - [Scroll API](elasticsearch/scroll-api.md)
 - [Index vs Store](elasticsearch/index-vs-store.md)
 
 ### Release Note
-- [v2.4~6.5](v2.4-6.5.md)
-- [v6.6](v6.6.md)
+- [v2.4~6.5](elasticsearch/release-note/v2.4-6.5.md)
+- [v6.6](elasticsearch/release-note/v6.6.md)
 
 ### Seminar
 - [Elastic{ON} 2019 Seoul](elasticsearch/elasticon-2019.md)
