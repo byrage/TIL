@@ -82,3 +82,34 @@ if (isValid(doc, 'time') {
   ...
 }
 ~~~
+
+## update list obejct
+- list : source의 기존 데이터를 삭제하고 add 메소드로 추가 필요
+- object : HashMap으로 만든 후에 add
+~~~groovy
+String code = "def field1 = params['field1'];\n"
+        + "def field2 = params['field2'];\n"
+        + "\n"
+        + "for (def i = 0; i < ctx._source.field.size(); i++) {\n"
+        + "    ctx._source.field.remove(i);\n"
+        + "}\n"
+        + "\n"
+        + "for (def i = 0; i < field1.size(); i++) {\n"
+        + "    HashMap property = new HashMap();\n"
+        + "    property.put(\"field1\", field1.get(i));\n"
+        + "    property.put(\"field2\", field2.get(i));\n"
+        + "\n"
+        + "    ctx._source.field.add(property);\n"
+        + "}\n"
+        + "\n"
+        + "ctx._source.modificationDate = params['modificationDate'];";
+
+List<String> field1 = field.stream().map(property::getfield1).collect(Collectors.toList());
+List<List<String>> field2 = field.stream().map(property::getfield2).collect(Collectors.toList());
+
+return new Script(ScriptType.INLINE, "painless", code,
+                  ImmutableMap.of(
+                          "field1", field1,
+                          "field2", field2,
+                          "modificationDate", modificationDate));
+~~~
